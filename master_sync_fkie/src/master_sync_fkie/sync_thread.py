@@ -256,7 +256,7 @@ class SyncThread(threading.Thread):
             for (topic, nodes) in publishers:
               for node in nodes:
                 topictype = self._getTopicType(topic, topicTypes)
-                nodeuri = self._getNodeUri(node, nodeProviders)
+                nodeuri = self._getNodeUri(node, nodeProviders, remote_masteruri)
                 if topictype and nodeuri and not self._doIgnoreNT(node, topic):
                   # register the nodes only once
                   if not ((topic, node, nodeuri) in self.__publisher):
@@ -277,7 +277,7 @@ class SyncThread(threading.Thread):
             for (topic, nodes) in subscribers:
               for node in nodes:
                 topictype = self._getTopicType(topic, topicTypes)
-                nodeuri = self._getNodeUri(node, nodeProviders)
+                nodeuri = self._getNodeUri(node, nodeProviders, remote_masteruri)
                 if topictype and nodeuri and not self._doIgnoreNT(node, topic):
                   # register the node as subscriber in local ROS master
                   if not ((topic, node, nodeuri) in self.__subscriber):
@@ -297,8 +297,8 @@ class SyncThread(threading.Thread):
             services_to_register = []
             for (service, nodes) in rservices:
               for node in nodes:
-                serviceuri = self._getServiceUri(service, serviceProviders)
-                nodeuri = self._getNodeUri(node, nodeProviders)
+                serviceuri = self._getServiceUri(service, serviceProviders, remote_masteruri)
+                nodeuri = self._getNodeUri(node, nodeProviders, remote_masteruri)
                 if serviceuri and nodeuri and not self._doIgnoreNS(node, service):
                   # register the node as publisher in local ROS master
                   if not ((service, serviceuri, node, nodeuri) in self.__services):
@@ -427,17 +427,17 @@ class SyncThread(threading.Thread):
         return type
     return None
 
-  def _getNodeUri(self, node, nodes):
+  def _getNodeUri(self, node, nodes, remote_masteruri):
     for (nodename, uri, masteruri, pid, local) in nodes:
-      if (nodename == node) and local == 'local':
+      if (nodename == node) and remote_masteruri == masteruri:
         # the node was registered originally to another ROS master -> do sync
         if  masteruri != self.localMasteruri:
           return uri
     return None
 
-  def _getServiceUri(self, service, nodes):
+  def _getServiceUri(self, service, nodes, remote_masteruri):
     for (servicename, uri, masteruri, type, local) in nodes:
-      if (servicename == service) and local == 'local':
+      if (servicename == service) and remote_masteruri == masteruri:
         if  masteruri != self.localMasteruri:
           return uri
     return None
