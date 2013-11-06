@@ -89,7 +89,7 @@ class McastSocket(socket.socket):
     except socket.error, (errn, msg):
       if errn in [19]:
         rospy.logerr("socket.error[%d]: %s, \nis multicast route set? e.g. sudo route add -net 224.0.0.0 netmask 224.0.0.0 eth0", errn, msg)
-      raise
+      #raise
 
     self.addrinfo = addrinfo
     self.group_bin = group_bin
