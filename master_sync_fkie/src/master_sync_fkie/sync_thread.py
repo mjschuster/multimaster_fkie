@@ -101,6 +101,7 @@ class SyncThread(threading.Thread):
     # a dictionary with services, the key is a tuple of (service name, service URL, node name, node URL), value is a boolean
     self.__services = {}
     
+    #node blacklist:
     self.ignore = ['/rosout', rospy.get_name(), self.masterInfo.discoverer_name, '/default_cfg', '/node_manager', '/zeroconf']
     if rospy.has_param('~ignore_nodes'):
       self.ignore[len(self.ignore):] = rospy.get_param('~ignore_nodes')
@@ -111,6 +112,12 @@ class SyncThread(threading.Thread):
     if rospy.has_param('~sync_nodes'): 
         self.sync_nodes[len(self.sync_nodes):] = rospy.get_param('~sync_nodes')
     rospy.loginfo("sync_nodes: " + str(self.sync_nodes))
+
+    #topic blacklist:
+    self.ignore_topics = ['/rosout', 'rosout_agg']
+    if rospy.has_param('~ignore_topics'): 
+        self.ignore_topics[len(self.ignore_topics):] = rospy.get_param('~ignore_topics')
+    rospy.loginfo("ignore_topics: " + str(self.ignore_topics))
 
 	#if ~sync_topics is set, sync only topics specified here (whitelist). ~ignore_nodes/~sync_nodes work independent of that.
     self.sync_topics = []
@@ -234,7 +241,7 @@ class SyncThread(threading.Thread):
           serviceProviders = remote_state[8]
           # sync the publishers
           for (topic, nodes) in publishers:
-            if not (topic in ['/rosout', 'rosout_agg']) and ((len(self.sync_topics) == 0) or (topic in self.sync_topics)):
+            if not (topic in self.ignore_topics) and ((len(self.sync_topics) == 0) or (topic in self.sync_topics)):
               for node in nodes:
                 topictype = self._getTopicType(topic, topicTypes)
                 nodeuri = self._getNodeUri(node, nodeProviders)
@@ -251,7 +258,7 @@ class SyncThread(threading.Thread):
   
           # sync the subscribers
           for (topic, nodes) in subscribers:
-            if not (topic in ['/rosout', 'rosout_agg']) and ((len(self.sync_topics) == 0) or (topic in self.sync_topics)):
+            if not (topic in self.ignore_topics) and ((len(self.sync_topics) == 0) or (topic in self.sync_topics)):
               for node in nodes:
                 topictype = self._getTopicType(topic, topicTypes)
                 nodeuri = self._getNodeUri(node, nodeProviders)
