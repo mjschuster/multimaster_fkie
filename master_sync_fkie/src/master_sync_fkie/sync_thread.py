@@ -114,7 +114,7 @@ class SyncThread(threading.Thread):
     rospy.loginfo("sync_nodes: " + str(self.sync_nodes))
 
     #topic blacklist:
-    self.ignore_topics = ['/rosout', 'rosout_agg']
+    self.ignore_topics = ['/rosout', '/rosout_agg']
     if rospy.has_param('~ignore_topics'): 
         self.ignore_topics[len(self.ignore_topics):] = rospy.get_param('~ignore_topics')
     rospy.loginfo("ignore_topics: " + str(self.ignore_topics))
